@@ -146,16 +146,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Feeds RSS temáticos corrigidos (incluindo fontes ativas de empregos/concursos)
+# Feeds RSS temáticos
 RSS_SOURCES = {
-    "🎯 Concursos & Empregos": {
-        "E-Konomista Empregos": "https://www.ekonomista.pt/emprego/feed/",
-        "G1 Carreiras": "https://g1.globo.com/rss/g1/concursos-e-emprego/",
-    },
     "⚽ Esportes & Futebol": {
         "GE - Globo Esporte": "https://ge.globo.com/rss/ge/",
         "Lance!": "https://www.lance.com.br/rss",
         "UOL Esporte": "https://esporte.uol.com.br/index.xml",
+    },
+    "🎯 Concursos & Empregos": {
+        "E-Konomista Empregos": "https://www.ekonomista.pt/emprego/feed/",
+        "G1 Carreiras": "https://g1.globo.com/rss/g1/concursos-e-emprego/",
     },
     "🏛️ Política & Brasil": {
         "G1 Política": "https://g1.globo.com/rss/g1/politica/",
@@ -173,8 +173,8 @@ RSS_SOURCES = {
 
 # Imagens ilustrativas seguras (Unsplash) por categoria
 CATEGORY_IMAGES = {
-    "🎯 Concursos & Empregos": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&q=80",
     "⚽ Esportes & Futebol": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&q=80",
+    "🎯 Concursos & Empregos": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&q=80",
     "🏛️ Política & Brasil": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=300&q=80",
     "🚀 Tecnologia & Ciência": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&q=80",
     "📈 Economia": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&q=80",
@@ -202,6 +202,31 @@ selected_categories = []
 for category in RSS_SOURCES.keys():
     if st.sidebar.checkbox(category, value=True):
         selected_categories.append(category)
+
+# Seção de escolha de clube favorito (aparece se a categoria de esportes estiver marcada)
+clube_selecionado = "Todos os Clubes"
+if "⚽ Esportes & Futebol" in selected_categories:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### ⚽ **Seu Clube de Futebol**")
+    clubes_lista = [
+        "Todos os Clubes",
+        "Flamengo",
+        "Palmeiras",
+        "Corinthians",
+        "São Paulo",
+        "Vasco",
+        "Fluminense",
+        "Botafogo",
+        "Grêmio",
+        "Internacional",
+        "Atlético-MG",
+        "Cruzeiro",
+        "Bahia",
+        "Remo",
+        "Paysandu",
+        "Santos",
+    ]
+    clube_selecionado = st.sidebar.selectbox("Escolha seu time do coração:", clubes_lista)
 
 if st.sidebar.button("🔄 Atualizar Feed", use_container_width=True):
     st.rerun()
@@ -275,8 +300,7 @@ if selected_categories:
                 if not feed or not feed.entries:
                     continue
 
-                for entry in feed.entries[:4]:
-                    total_cat_articles += 1
+                for entry in feed.entries:
                     title = entry.get("title", "Sem título")
                     link = entry.get("link", "#")
                     summary = entry.get(
@@ -284,6 +308,13 @@ if selected_categories:
                         entry.get("description", "Sem descrição disponível."),
                     )
 
+                    # Se estiver na aba de esportes e o usuário escolheu um clube específico, aplica o filtro
+                    if category == "⚽ Esportes & Futebol" and clube_selecionado != "Todos los Clubes" and clube_selecionado != "Todos os Clubes":
+                        texto_analise = f"{title} {summary}".lower()
+                        if clube_selecionado.lower() not in texto_analise:
+                            continue  # Pula notícias que não citam o time escolhido
+
+                    total_cat_articles += 1
                     clean_summary = re.sub("<.*?>", "", summary)
                     if len(clean_summary) > 130:
                         clean_summary = clean_summary[:130] + "..."
@@ -328,8 +359,15 @@ if selected_categories:
                         unsafe_allow_html=True,
                     )
 
+                    # Limita a exibir até 6 notícias correspondentes por fonte
+                    if total_cat_articles >= 10:
+                        break
+
             if total_cat_articles == 0:
-                st.info("Nenhuma notícia encontrada nesta categoria no momento.")
+                if category == "⚽ Esportes & Futebol" and clube_selecionado != "Todos os Clubes":
+                    st.info(f"Nenhuma notícia recente encontrada especificamente sobre o **{clube_selecionado}** no momento. Tente selecionar 'Todos os Clubes' para ver o feed geral de esportes.")
+                else:
+                    st.info("Nenhuma notícia encontrada nesta categoria no momento.")
 else:
     st.warning("⚠️ Nenhuma categoria selecionada na barra lateral.")
 
