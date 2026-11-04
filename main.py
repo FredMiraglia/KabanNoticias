@@ -7,7 +7,7 @@ import streamlit as st
 
 # Configuração da página mobile-friendly com Kabar e ícone 3D
 st.set_page_config(
-    page_title="Kabar - Notícias Globais",
+    page_title="Kabar - Notícias Globais e Esportes",
     page_icon="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=128&q=80",
     layout="centered",
 )
@@ -133,44 +133,51 @@ st.markdown(
         background-color: #3b82f6;
         color: white;
     }
+    .disclaimer-box {
+        font-size: 10px;
+        color: #6b7280;
+        text-align: center;
+        padding: 15px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 30px;
+    }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Feeds RSS temáticos
+# Feeds RSS temáticos atualizados e ativos
 RSS_SOURCES = {
+    "⚽ Esportes & Futebol": {
+        "GE - Globo Esporte": "https://ge.globo.com/rss/ge/",
+        "Lance!": "https://www.lance.com.br/rss",
+        "UOL Esporte": "https://esporte.uol.com.br/index.xml",
+    },
     "🎯 Concursos & Empregos": {
         "PCI Concursos": "https://www.pciconcursos.com.br/noticias/rss",
         "JC Concursos": "https://jcconcursos.com.br/rss",
     },
     "🏛️ Política & Brasil": {
         "G1 Política": "https://g1.globo.com/rss/g1/politica/",
-        "CNN Brasil Política": "https://www.cnnbrasil.com.br/politica/feed/",
+        "CNN Brasil": "https://www.cnnbrasil.com.br/feed/",
     },
-    "🚀 Astronomia & Ciência": {
-        "Canaltech (Espaço/Ciência)": (
-            "https://canaltech.com.br/rss/canaltech-ciencia-e-espaco/"
-        ),
-        "Olhar Digital (Ciência)": (
-            "https://olhardigital.com.br/categoria/ciencia-e-espaco/feed/"
-        ),
-    },
-    "🔮 Astrologia": {
-        "João Bidu (Horóscopo)": "https://joaobidu.com.br/feed/",
-    },
-    "⚽ Esportes": {
-        "GE - Globo Esporte": "https://ge.globo.com/rss/ge/",
-        "Lance!": "https://www.lance.com.br/rss",
-    },
-    "💻 Tecnologia": {
+    "🚀 Tecnologia & Ciência": {
         "Tecnoblog": "https://tecnoblog.net/feed/",
-        "Olhar Digital": "https://olhardigital.com.br/feed/",
+        "Canaltech": "https://canaltech.com.br/rss/",
     },
     "📈 Economia": {
         "G1 Economia": "https://g1.globo.com/rss/g1/economia/",
         "InfoMoney": "https://www.infomoney.com.br/feed/",
     },
+}
+
+# Imagens ilustrativas seguras (Unsplash) por categoria
+CATEGORY_IMAGES = {
+    "⚽ Esportes & Futebol": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&q=80",
+    "🎯 Concursos & Empregos": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&q=80",
+    "🏛️ Política & Brasil": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=300&q=80",
+    "🚀 Tecnologia & Ciência": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&q=80",
+    "📈 Economia": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&q=80",
 }
 
 # Cabeçalho Principal com Logo 3D
@@ -214,9 +221,7 @@ with st.sidebar.form("form_contato"):
 
     if enviar_msg:
         if nome_usuario and mensagem_usuario:
-            # Número de WhatsApp configurado com o seu contato (55 + 91 + 998339441)
             meu_whatsapp = "5591998339441"
-
             texto_wpp = f"Olá! Me chamo {nome_usuario} e enviei esta mensagem pelo app Kabar:\n\n{mensagem_usuario}"
             link_wpp_dono = f"https://api.whatsapp.com/send?phone={meu_whatsapp}&text={urllib.parse.quote(texto_wpp)}"
 
@@ -234,37 +239,17 @@ st.sidebar.info(
 )
 
 
-# Função para extrair imagem da notícia
-def extract_image(entry):
-    if hasattr(entry, "media_content") and entry.media_content:
-        for media in entry.media_content:
-            if "url" in media:
-                return media["url"]
-    if hasattr(entry, "enclosures") and entry.enclosures:
-        for enc in entry.enclosures:
-            if "type" in enc and "image" in enc["type"]:
-                return enc["href"]
-
-    content_html = entry.get("summary", entry.get("description", "")) + entry.get(
-        "content", [{}]
-    )[0].get("value", "")
-    img_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', content_html)
-    if img_match:
-        return img_match.group(1)
-
-    return "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80"
-
-
-# Função segura para buscar feed via HTTP
+# Função robusta para buscar feed via HTTP simulando um navegador real
 def fetch_feed_data(url):
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            " (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
         )
     }
     try:
-        response = requests.get(url, headers=headers, timeout=8)
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             return feedparser.parse(response.content)
     except Exception:
@@ -272,7 +257,7 @@ def fetch_feed_data(url):
     return feedparser.parse(url)
 
 
-# Renderização por Abas Dinâmicas (Mais limpo e interativo)
+# Renderização por Abas Dinâmicas
 if selected_categories:
     tabs = st.tabs(selected_categories)
 
@@ -280,6 +265,9 @@ if selected_categories:
         with tabs[i]:
             sources = RSS_SOURCES[category]
             total_cat_articles = 0
+            fallback_image = CATEGORY_IMAGES.get(
+                category, "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80"
+            )
 
             for source_name, url in sources.items():
                 feed = fetch_feed_data(url)
@@ -300,7 +288,7 @@ if selected_categories:
                     if len(clean_summary) > 130:
                         clean_summary = clean_summary[:130] + "..."
 
-                    image_url = extract_image(entry)
+                    image_url = fallback_image
 
                     # Links de compartilhamento social
                     share_text = f"Olha essa notícia no Kabar: {title} - {link}"
@@ -321,7 +309,7 @@ if selected_categories:
                     st.markdown(
                         f"""
                         <div class="news-card">
-                            <img src="{image_url}" class="news-image" onerror="this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80'">
+                            <img src="{image_url}" class="news-image" alt="Thumbnail">
                             <div class="news-content">
                                 <a href="{link}" target="_blank" class="news-title">{title}</a>
                                 <div class="news-summary">{clean_summary}</div>
@@ -344,3 +332,14 @@ if selected_categories:
                 st.info("Nenhuma notícia encontrada nesta categoria no momento.")
 else:
     st.warning("⚠️ Nenhuma categoria selecionada na barra lateral.")
+
+# Rodapé com Aviso Legal
+st.markdown(
+    """
+    <div class="disclaimer-box">
+        <strong>Kabar Notícias Globais</strong> é um agregador independente de links RSS públicos. 
+        Todo o conteúdo, marcas e direitos autorais das notícias exibidas pertencem exclusivamente aos seus respectivos veículos de imprensa originais.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
