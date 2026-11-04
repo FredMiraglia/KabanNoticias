@@ -1,0 +1,6 @@
+html
+re
+urllib.parse
+feedparser
+requests
+streamlit
