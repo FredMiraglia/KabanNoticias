@@ -146,16 +146,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Feeds RSS temáticos atualizados e ativos
+# Feeds RSS temáticos corrigidos (incluindo fontes ativas de empregos/concursos)
 RSS_SOURCES = {
+    "🎯 Concursos & Empregos": {
+        "E-Konomista Empregos": "https://www.ekonomista.pt/emprego/feed/",
+        "G1 Carreiras": "https://g1.globo.com/rss/g1/concursos-e-emprego/",
+    },
     "⚽ Esportes & Futebol": {
         "GE - Globo Esporte": "https://ge.globo.com/rss/ge/",
         "Lance!": "https://www.lance.com.br/rss",
         "UOL Esporte": "https://esporte.uol.com.br/index.xml",
-    },
-    "🎯 Concursos & Empregos": {
-        "PCI Concursos": "https://www.pciconcursos.com.br/noticias/rss",
-        "JC Concursos": "https://jcconcursos.com.br/rss",
     },
     "🏛️ Política & Brasil": {
         "G1 Política": "https://g1.globo.com/rss/g1/politica/",
@@ -173,8 +173,8 @@ RSS_SOURCES = {
 
 # Imagens ilustrativas seguras (Unsplash) por categoria
 CATEGORY_IMAGES = {
-    "⚽ Esportes & Futebol": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&q=80",
     "🎯 Concursos & Empregos": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&q=80",
+    "⚽ Esportes & Futebol": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&q=80",
     "🏛️ Política & Brasil": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=300&q=80",
     "🚀 Tecnologia & Ciência": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&q=80",
     "📈 Economia": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&q=80",
